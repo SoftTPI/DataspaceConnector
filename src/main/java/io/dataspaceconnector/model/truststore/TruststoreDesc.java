@@ -12,10 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *  Contributors:
- *       sovity GmbH
- *
  */
 package io.dataspaceconnector.model.truststore;
 
@@ -45,4 +41,9 @@ public class TruststoreDesc extends Description {
      * The password of the trust store.
      */
     private String password;
+
+    /**
+     * Alias for the key store.
+     */
+    private String alias;
 }

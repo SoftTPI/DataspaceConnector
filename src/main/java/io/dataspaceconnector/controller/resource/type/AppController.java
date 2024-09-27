@@ -46,6 +46,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import okhttp3.Response;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -179,15 +180,17 @@ public class AppController extends BaseResourceController<App, AppDesc, AppView,
             return ResponseUtils.respondAppNotDeployed(e);
         } catch (RuntimeException | IOException e) {
             return ResponseUtils.respondPortainerError(e);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void initPortainerSvc() throws PortainerNotConfigured, IOException {
+    private void initPortainerSvc() throws PortainerNotConfigured, IOException, JSONException {
         portainerSvc.resetToken();
         portainerSvc.createEndpointId();
     }
 
-    private ResponseEntity<Object> describeApp(final String containerId) throws IOException {
+    private ResponseEntity<Object> describeApp(final String containerId) throws IOException, JSONException {
         if (containerId == null || containerId.equals("")) {
             return new JsonResponse("No container id provided.").create(HttpStatus.NOT_FOUND);
         } else {
@@ -207,7 +210,7 @@ public class AppController extends BaseResourceController<App, AppDesc, AppView,
     }
 
     private ResponseEntity<Object> deleteApp(final @PathVariable("id") UUID appId,
-                                             final String containerId) throws IOException {
+                                             final String containerId) throws IOException, JSONException {
         Response response;
         if (containerId == null || containerId.equals("")) {
             return new JsonResponse("No running container found.").create(HttpStatus.NOT_FOUND);
@@ -224,7 +227,7 @@ public class AppController extends BaseResourceController<App, AppDesc, AppView,
     }
 
     private ResponseEntity<Object> stopApp(final App app,
-                                           final String containerId) throws IOException {
+                                           final String containerId) throws IOException, JSONException {
         Response response;
         if (containerId == null || containerId.equals("")) {
             return new JsonResponse("No container id provided.").create(HttpStatus.NOT_FOUND);
@@ -242,7 +245,7 @@ public class AppController extends BaseResourceController<App, AppDesc, AppView,
 
     private ResponseEntity<Object> startApp(final App app,
                                             final String containerId)
-            throws IOException, AppNotDeployedException {
+            throws IOException, AppNotDeployedException, JSONException {
         String deployedContainerId;
 
         if (containerId == null || containerId.equals("")) {
@@ -258,11 +261,11 @@ public class AppController extends BaseResourceController<App, AppDesc, AppView,
                 "Successfully started the app.");
     }
 
-    private boolean isAppRunning(final String containerID) throws IOException {
+    private boolean isAppRunning(final String containerID) throws IOException, JSONException {
         return portainerSvc.validateContainerRunning(containerID);
     }
 
-    private String deployApp(final App app) throws IOException, AppNotDeployedException {
+    private String deployApp(final App app) throws IOException, AppNotDeployedException, JSONException {
         if (!(app instanceof AppImpl)) {
             //needs to be checked because of cast to AppImpl
             throw new AppNotDeployedException();
@@ -311,7 +314,7 @@ public class AppController extends BaseResourceController<App, AppDesc, AppView,
      * @throws IOException If connection to Portainer threw exception.
      */
     private void persistContainerData(final App app, final String containerId,
-                                      final Response containerDesc) throws IOException {
+                                      final Response containerDesc) throws IOException, JSONException {
         final var responseBody = containerDesc.body();
         if (responseBody != null) {
             final var name = new JSONObject(responseBody.string()).getString("Name");

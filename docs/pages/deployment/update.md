@@ -29,11 +29,12 @@ as the latest release. This will look as follows, e.g.:
 ```json
 {
   "title": "Dataspace Connector",
-  "description": "IDS Connector",
+  "description": "IDS Connector originally developed by the Fraunhofer ISST",
   "version": "6.2.0",
   "contact": {
-    "organization": "sovity GmbH",
-    "email": "contact@sovity.de"
+    "organization": "Fraunhofer Institute for Software and Systems Engineering",
+    "website": "https://www.dataspace-connector.io/",
+    "email": "info@dataspace-connector.de"
   },
   "license": {
     "name": "Apache License, Version 2.0",

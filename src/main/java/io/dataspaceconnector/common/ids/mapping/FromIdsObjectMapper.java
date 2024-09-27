@@ -585,7 +585,8 @@ public final class FromIdsObjectMapper {
         desc.setSecurityProfile(fromIdsSecurityProfile(connector.getSecurityProfile()));
         desc.setTruststore(new TruststoreDesc(
                 configModel.getTrustStore(),
-                configModel.getTrustStorePassword()));
+                configModel.getTrustStorePassword(),
+                configModel.getTrustStoreAlias()));
         desc.setStatus(fromIdsConnectorStatus(configModel.getConnectorStatus()));
         desc.setConnectorId(connector.getId());
         desc.setPublicKey(connector.getPublicKey().getKeyValue());

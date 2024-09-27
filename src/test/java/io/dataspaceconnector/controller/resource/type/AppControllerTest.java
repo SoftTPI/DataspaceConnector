@@ -25,6 +25,7 @@ import io.dataspaceconnector.service.AppRouteResolver;
 import io.dataspaceconnector.service.appstore.portainer.PortainerService;
 import io.dataspaceconnector.service.resource.type.AppService;
 import okhttp3.*;
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -57,7 +58,7 @@ class AppControllerTest {
     private AppController appController;
 
     @BeforeEach
-    public void prepare() throws IOException, NoSuchFieldException, IllegalAccessException {
+    public void prepare() throws IOException, NoSuchFieldException, IllegalAccessException, JSONException {
         //prepare mocked app
         var returnedApp = new AppImpl();
         var idField = Entity.class.getDeclaredField("id");
@@ -126,7 +127,7 @@ class AppControllerTest {
     }
 
     @Test
-    public void testContainerManagementExceptions() throws PortainerNotConfigured, IOException {
+    public void testContainerManagementExceptions() throws PortainerNotConfigured, IOException, JSONException {
         doThrow(new PortainerNotConfigured()).when(portainerService).createEndpointId();
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, appController.containerManagement(UUID.randomUUID(),
                 ActionType.START).getStatusCode());
@@ -155,7 +156,7 @@ class AppControllerTest {
     }
 
     @Test
-    public void testReadResponse() throws IOException {
+    public void testReadResponse() throws IOException, JSONException {
         //prepare mock response
         var returnedNotModifiedResponse = createResponseWithCode(304);
         var returnedNotFoundResponse = createResponseWithCode(404);

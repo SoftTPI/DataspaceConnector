@@ -403,14 +403,8 @@ public final class GuiUtils {
             public int compare(final JSONObject a, final JSONObject b) {
                 var str1 = "";
                 var str2 = "";
-                try {
-                    str1 = (String) a.get(KEY_NAME);
-                    str2 = (String) b.get(KEY_NAME);
-                } catch (JSONException e) {
-                    if (log.isErrorEnabled()) {
-                        log.error("Sorting contents of an array failed.");
-                    }
-                }
+                str1 = (String) a.get(KEY_NAME);
+                str2 = (String) b.get(KEY_NAME);
                 return str1.compareTo(str2);
             }
         });

@@ -12,10 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *  Contributors:
- *       sovity GmbH
- *
  */
 package io.dataspaceconnector.service.resource.ids.builder;
 
@@ -72,6 +68,7 @@ public final class IdsConfigModelBuilder extends AbstractIdsBuilder<Configuratio
                 ._keyStoreAlias_(config.getKeystore().getAlias())
                 ._trustStore_(config.getTruststore().getLocation())
                 ._trustStorePassword_(config.getTruststore().getPassword())
+                ._trustStoreAlias_(config.getTruststore().getAlias())
                 ._configurationModelLogLevel_(logLevel)
                 ._connectorStatus_(status)
                 ._connectorDescription_(connector);

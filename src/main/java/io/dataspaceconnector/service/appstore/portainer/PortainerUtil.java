@@ -21,6 +21,7 @@ package io.dataspaceconnector.service.appstore.portainer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.minidev.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ public final class PortainerUtil {
                                                         final List<String> ports,
                                                         final Map<String, String> volumes,
                                                         final String containerName)
-            throws IOException {
+            throws IOException, JSONException {
         // Build json payload and fill single fields.
         final var jsonPayload = new JSONObject() {{
             put("Env", new JSONArray());
@@ -128,7 +129,7 @@ public final class PortainerUtil {
      */
     public static JSONObject createNetworkPayload(final String networkName,
                                                   final boolean pub,
-                                                  final boolean adminOnly) {
+                                                  final boolean adminOnly) throws JSONException {
         final var resourceControl = new JSONObject() {{
             put("TeamAccess", new org.json.JSONArray());
             put("Public", pub);

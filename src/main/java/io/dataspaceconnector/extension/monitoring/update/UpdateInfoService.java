@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -123,6 +124,8 @@ public class UpdateInfoService {
                 log.debug("Could not read response from GitHub. [exception=({})]", e.getMessage());
             }
             return new HashMap<>();
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -132,7 +135,7 @@ public class UpdateInfoService {
      * @param response The response of the GitHub request.
      * @return Necessary data to determine whether there is an update and additional information.
      */
-    private static Map<String, Object> parseResponse(final String response) {
+    private static Map<String, Object> parseResponse(final String response) throws JSONException {
         final var responseObj = new JSONObject(response);
         final var latestTag = responseObj.get("tag_name").toString().replace("v", "");
 

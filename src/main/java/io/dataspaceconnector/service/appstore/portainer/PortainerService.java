@@ -33,19 +33,13 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -122,7 +116,7 @@ public class PortainerService {
      *
      * @return If successful, a jwt token is returned for authentication.
      */
-    public String authenticate() {
+    public String authenticate() throws JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -157,7 +151,7 @@ public class PortainerService {
      * @return Response of starting container.
      * @throws IOException if an error occurs while starting the container.
      */
-    public Response startContainer(final String containerId) throws IOException {
+    public Response startContainer(final String containerId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
 
         final var urlBuilder = new HttpUrl.Builder()
@@ -183,7 +177,7 @@ public class PortainerService {
      * @return Response of stopping container.
      * @throws IOException if an error occurs while stopping the container.
      */
-    public Response stopContainer(final String containerId) throws IOException {
+    public Response stopContainer(final String containerId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
 
         final var urlBuilder = new HttpUrl.Builder()
@@ -209,7 +203,7 @@ public class PortainerService {
      * @return Response of deleting container.
      * @throws IOException if an error occurs while deleting the container.
      */
-    public Response deleteContainer(final String containerId) throws IOException {
+    public Response deleteContainer(final String containerId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
 
         final var urlBuilder = new HttpUrl.Builder()
@@ -235,7 +229,7 @@ public class PortainerService {
      * @return Boolean, true if container running, else false.
      * @throws IOException If an error occurs while connecting to Portainer.
      */
-    public boolean validateContainerRunning(final String containerId) throws IOException {
+    public boolean validateContainerRunning(final String containerId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
 
         final var urlBuilder = new HttpUrl.Builder()
@@ -254,11 +248,14 @@ public class PortainerService {
         final var response = httpService.send(request);
         final var containers = new JSONArray(checkResponseNotNull(response));
 
-        for (final var container : containers) {
-            if (((JSONObject) container).get("Id").equals(containerId)) {
-                return ((JSONObject) container).get("State").equals("running");
+        for (int i = 0; i < containers.length(); i++) {
+            JSONObject container = containers.getJSONObject(i);
+
+            if (container.get("Id").equals(containerId)) {
+                return container.get("State").equals("running");
             }
         }
+
 
         return false;
     }
@@ -268,7 +265,7 @@ public class PortainerService {
      *
      * @throws IOException if an error occurs while deleting not used volumes.
      */
-    public void deleteUnusedVolumes() throws IOException {
+    public void deleteUnusedVolumes() throws IOException, JSONException {
         final var builder = getRequestBuilder();
 
         final var urlBuilder = new HttpUrl.Builder()
@@ -292,7 +289,7 @@ public class PortainerService {
      * @return Response is container description.
      * @throws IOException if an error occurs while deleting the container.
      */
-    public Response getDescriptionByContainerId(final String containerId) throws IOException {
+    public Response getDescriptionByContainerId(final String containerId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
 
         final var urlBuilder = new HttpUrl.Builder()
@@ -317,7 +314,7 @@ public class PortainerService {
      * @throws IOException            if an error occurs while requesting the id of the endpoint.
      * @throws PortainerNotConfigured if portainer is not configured.
      */
-    public void createEndpointId() throws PortainerNotConfigured, IOException {
+    public void createEndpointId() throws PortainerNotConfigured, IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -335,11 +332,14 @@ public class PortainerService {
         final var response = httpService.send(request);
         final var jsonArray = new JSONArray(checkResponseNotNull(response));
 
-        for (var tmpObj : jsonArray) {
-            if (((JSONObject) tmpObj).getNumber("Type").equals(1)) {
-                endpointId = ((JSONObject) tmpObj).get("Id").toString();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject tmpObj = jsonArray.getJSONObject(i);  // Access each JSONObject in the JSONArray
+
+            if (tmpObj.getInt("Type") == 1) {
+                endpointId = tmpObj.get("Id").toString();
             }
         }
+
         if (endpointId == null) {
             throw new PortainerNotConfigured();
         }
@@ -352,7 +352,7 @@ public class PortainerService {
      * @return ID of the network in Portainer.
      * @throws IOException Exception while connecting to Portainer.
      */
-    public String getNetworkId(final String networkName) throws IOException {
+    public String getNetworkId(final String networkName) throws IOException, JSONException {
         final var builder = getRequestBuilder();
 
         final var urlBuilder = new HttpUrl.Builder()
@@ -369,11 +369,14 @@ public class PortainerService {
         final var response = httpService.send(request);
         final var networks = new JSONArray(checkResponseNotNull(response));
 
-        for (final var network : networks) {
-            if (((JSONObject) network).get("Name").equals(networkName)) {
-                return ((JSONObject) network).get("Id").toString();
+        for (int i = 0; i < networks.length(); i++) {
+            JSONObject network = networks.getJSONObject(i);  // Access each JSONObject
+
+            if (network.get("Name").equals(networkName)) {
+                return network.get("Id").toString();
             }
         }
+
 
         // If network does not exist, create it.
         return createNetwork(networkName, true, false);
@@ -386,7 +389,7 @@ public class PortainerService {
      * @return The Id of the created registry.
      * @throws IOException if an error occurs while connection to portainer.
      */
-    public Integer createRegistry(final String appStoreTemplate) throws IOException {
+    public Integer createRegistry(final String appStoreTemplate) throws IOException, JSONException {
         final var templateObject = toJsonObject(appStoreTemplate);
         final var registryURL = templateObject.getString("registry");
 
@@ -441,7 +444,7 @@ public class PortainerService {
      * @param registryId The ID of the registry to be deleted.
      * @throws IOException Exception while connection to portainer.
      */
-    public void deleteRegistry(final Integer registryId) throws IOException {
+    public void deleteRegistry(final Integer registryId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -464,16 +467,18 @@ public class PortainerService {
      * @return ID of registry if existing.
      * @throws IOException If an error occurs while connection to portainer.
      */
-    public Integer registryExists(final String registryURL) throws IOException {
+    public Integer registryExists(final String registryURL) throws IOException, JSONException {
         final var response = getRegistries();
-        final var registries = new JSONArray(
-                checkResponseNotNull(response));
+        final var registries = new JSONArray(checkResponseNotNull(response));
 
-        for (final var registry : registries) {
-            if (((JSONObject) registry).get("URL").equals(registryURL)) {
-                return Integer.parseInt(((JSONObject) registry).get("Id").toString());
+        for (int i = 0; i < registries.length(); i++) {
+            JSONObject registry = registries.getJSONObject(i);  // Access each JSONObject
+
+            if (registry.get("URL").equals(registryURL)) {
+                return Integer.parseInt(registry.get("Id").toString());
             }
         }
+
 
         return null;
     }
@@ -490,7 +495,7 @@ public class PortainerService {
     public Response disconnectContainerFromNetwork(
             final String containerID,
             final String networkName,
-            final boolean force) throws IOException {
+            final boolean force) throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -519,7 +524,7 @@ public class PortainerService {
      * @return response from portainer
      * @throws IOException if request to portainer fails.
      */
-    public Response getRegistries() throws IOException {
+    public Response getRegistries() throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -543,7 +548,7 @@ public class PortainerService {
      * @return response from portainer.
      * @throws IOException when requesting portainer fails.
      */
-    public Response deleteImage(final String imageId) throws IOException {
+    public Response deleteImage(final String imageId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -567,7 +572,7 @@ public class PortainerService {
      * @return response from portainer.
      * @throws IOException when requesting portainer fails.
      */
-    public Response deleteNetwork(final String networkId) throws IOException {
+    public Response deleteNetwork(final String networkId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -591,7 +596,7 @@ public class PortainerService {
      * @return response from portainer.
      * @throws IOException when requesting portainer fails.
      */
-    public Response deleteVolume(final String volumeId) throws IOException {
+    public Response deleteVolume(final String volumeId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -615,7 +620,7 @@ public class PortainerService {
      * @return Response of portainer.
      * @throws IOException If an error occurs while connection to portainer.
      */
-    public Response pullImage(final String appStoreTemplate) throws IOException {
+    public Response pullImage(final String appStoreTemplate) throws IOException, JSONException {
         final var templateObject = toJsonObject(appStoreTemplate);
         final var registryUrl = templateObject.getString("registry");
 
@@ -674,7 +679,7 @@ public class PortainerService {
      * @throws IOException If an error occurs while connecting to portainer.
      */
     @SuppressFBWarnings("DE_MIGHT_IGNORE")
-    private void waitForImagePull(final String tag) throws IOException {
+    private void waitForImagePull(final String tag) throws IOException, JSONException {
         //Check if image is successfully pulled in Portainer,
         //otherwise wait until process is finished.
         final var maxWaitTimeSec = 60;
@@ -705,7 +710,7 @@ public class PortainerService {
      * @return true if image exists in portainer.
      * @throws IOException If an error occurs while connecting to portainer.
      */
-    private boolean checkIfImageExists(final String tag) throws IOException {
+    private boolean checkIfImageExists(final String tag) throws IOException, JSONException {
         final var builder = getRequestBuilder();
 
         final var urlBuilder = new HttpUrl.Builder()
@@ -736,7 +741,7 @@ public class PortainerService {
      * @throws IOException If an error occurs while connecting to portainer.
      */
     public Map<String, String> createVolumes(final String appStoreTemplate, final String appID)
-            throws IOException {
+            throws IOException, JSONException {
         final Map<String, String> volumeNames = new HashMap<>();
         final var templateObject = toJsonObject(appStoreTemplate);
         var volumes = new JSONArray();
@@ -748,8 +753,13 @@ public class PortainerService {
             final var currentVolume = volumes.getJSONObject(i);
 
             // Get Key Names
-            Set<String> names = currentVolume.keySet();
-            final var namesList = new ArrayList<>(names);
+            Iterator<String> keys = currentVolume.keys();
+            final var namesList = new ArrayList<String>();
+
+            // Collect keys into namesList
+            while (keys.hasNext()) {
+                namesList.add(keys.next());
+            }
 
             final var req = new JSONObject();
             for (var key : namesList) {
@@ -759,6 +769,7 @@ public class PortainerService {
                     volumeNames.put(value, key);
                 }
             }
+
             final var templateName = currentVolume.getString("container") + "_" + appID;
             final var validTemplateName = templateName
                     .substring(templateName.indexOf("/") + 1)
@@ -771,19 +782,22 @@ public class PortainerService {
                     .host(portainerConfig.getHost())
                     .port(portainerConfig.getPort())
                     .addPathSegments(API_ENDPOINT + endpointId + "/docker/volumes/create");
+
             final var url = urlBuilder.build();
             builder.addHeader("Authorization", "Bearer " + getJwtToken());
             builder.url(url);
             builder.post(
-                    RequestBody.create(req.toString(), MediaType.parse(API_MEDIA_TYPE)
-                    ));
+                    RequestBody.create(req.toString(), MediaType.parse(API_MEDIA_TYPE))
+            );
 
             final var request = builder.build();
             final var response = httpService.send(request);
+
             volumeNames.put(templateName, new JSONObject(checkResponseNotNull(response))
                     .getString("Name")
             );
         }
+
         return volumeNames;
     }
 
@@ -800,7 +814,7 @@ public class PortainerService {
             final String appStoreTemplate,
             final Map<String, String> volumes,
             final List<AppEndpointImpl> appEndpoints
-    ) throws IOException {
+    ) throws IOException, JSONException {
         final var templateObject = toJsonObject(appStoreTemplate);
 
         //get all ports from the appTemplate (with label)
@@ -808,18 +822,28 @@ public class PortainerService {
         var portArray = templateObject.getJSONArray("ports");
         var protocol = "";
         for (int i = 0; i < portArray.length(); i++) {
-            var portobj = portArray.getJSONObject(i);
-            var labels = portobj.keySet();
-            for (var label : labels) {
-                var port = portobj.getString(label);
+            var portObj = portArray.getJSONObject(i);
+            var labels = portObj.keys(); // Use keys() for iteration
+
+            while (labels.hasNext()) {
+                var label = (String)labels.next(); // Get next key
+                var port = portObj.getString(label);
+
+                // Check if port contains ":" and handle accordingly
                 if (port.contains(":")) {
-                    port = port
-                            .substring(port.indexOf(":") + 1);
+                    port = port.substring(port.indexOf(":") + 1); // Extract after ':'
                 }
-                protocol = port.substring(port.indexOf("/") + 1);
+
+                // Check if port contains "/" and handle accordingly
+                if (port.contains("/")) {
+                    protocol = port.substring(port.indexOf("/") + 1); // Extract protocol
+                }
+
+                // Store in the map
                 portLabelMap.put(port, label);
             }
         }
+
 
         final var containerName = "app-" + System.currentTimeMillis();
 
@@ -879,7 +903,7 @@ public class PortainerService {
      * @param resourceId id of resource, for which ownership should be changed.
      * @throws IOException If an error occurs while connecting to portainer.
      */
-    private void updateOwnerShip(final int resourceId) throws IOException {
+    private void updateOwnerShip(final int resourceId) throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -911,7 +935,7 @@ public class PortainerService {
      * @throws IOException if sending request to portainer fails
      */
     private String createNetwork(final String networkName, final boolean pub,
-                                 final boolean adminOnly) throws IOException {
+                                 final boolean adminOnly) throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -948,7 +972,7 @@ public class PortainerService {
      */
     @SuppressFBWarnings("FORMAT_STRING_MANIPULATION")
     public Response joinNetwork(final String containerID, final String networkID)
-            throws IOException {
+            throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -981,7 +1005,7 @@ public class PortainerService {
      * @return response from portainer
      * @throws IOException if sending request to portainer fails
      */
-    public Response getContainers() throws IOException {
+    public Response getContainers() throws IOException, JSONException {
         return getItem("containers/json");
     }
 
@@ -991,7 +1015,7 @@ public class PortainerService {
      * @return response from portainer
      * @throws IOException if sending request to portainer fails
      */
-    public Response getImages() throws IOException {
+    public Response getImages() throws IOException, JSONException {
         return getItem("images/json");
     }
 
@@ -1001,7 +1025,7 @@ public class PortainerService {
      * @return response from portainer
      * @throws IOException if sending request to portainer fails
      */
-    public Response getNetworks() throws IOException {
+    public Response getNetworks() throws IOException, JSONException {
         return getItem("networks");
     }
 
@@ -1011,14 +1035,14 @@ public class PortainerService {
      * @return response from portainer
      * @throws IOException if sending request to portainer fails
      */
-    public Response getVolumes() throws IOException {
+    public Response getVolumes() throws IOException, JSONException {
         return getItem("volumes");
     }
 
     /**
      * Resets the Portainer access token.
      */
-    public void resetToken() {
+    public void resetToken() throws JSONException {
         accessToken = null;
         getJwtToken();
     }
@@ -1031,7 +1055,7 @@ public class PortainerService {
      * @return response from portainer
      * @throws IOException if sending request to portainer fails
      */
-    private Response getItem(final String part) throws IOException {
+    private Response getItem(final String part) throws IOException, JSONException {
         final var builder = getRequestBuilder();
         final var urlBuilder = new HttpUrl.Builder()
                 .scheme(portainerConfig.getScheme())
@@ -1060,7 +1084,7 @@ public class PortainerService {
      *
      * @return auth jwt token for portainer.
      */
-    private String getJwtToken() {
+    private String getJwtToken() throws JSONException {
         if (accessToken == null || accessTokenValid.before(Calendar.getInstance().getTime())) {
             final var response = authenticate();
             accessToken = response.substring(START_INDEX, response.length() - LAST_INDEX);
@@ -1081,7 +1105,7 @@ public class PortainerService {
      * @return request body as string.
      */
     private String createRequestBodyForAuthentication(final String username,
-                                                      final String password) {
+                                                      final String password) throws JSONException {
         final var jsonObject = new JSONObject();
         jsonObject.put("Username", username);
         jsonObject.put("Password", password);
@@ -1095,7 +1119,7 @@ public class PortainerService {
      * @param string some given string.
      * @return string parsed to JSONObject.
      */
-    private JSONObject toJsonObject(final String string) {
+    private JSONObject toJsonObject(final String string) throws JSONException {
         return new JSONObject(string);
     }
 

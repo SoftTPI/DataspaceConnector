@@ -44,23 +44,32 @@ If you want to run your IDS-connector on an internet domain, such as connector.a
 for instance, there are two steps involved to receive your key material to authenticate at the IDS
 DAPS:
 
-1. Please register for a Github Account and for the International Dataspaces Association (use the contact form) on the
-   [website](https://internationaldataspaces.org) and wait for approval.
+1. Register for an account at the IDS Association's
+   [website](https://internationaldataspaces.org/we/get-access-to-jive/) and wait for manual
+   approval for 1-2 days.
 
-2. How to Submit Requests: please send a mail to [daps-certificates@aisec.fraunhofer.de](mailto:daps-certificates@aisec.fraunhofer.de) with the following necessary pieces of information for the DAPS certificate request:
+2. Enter a request for a DAPS certificate in
+   [this](https://industrialdataspace.jiveon.com/docs/DOC-2002) list. The mandatory pieces of
+   information for the certificate include:
    - Country,
    - Organization,
    - Organizational Unit,
-   - Domain,
-   - and if the entry shall be published within the IDS community (default yes).
-     Afterwards, you will receive the certificate and its corresponding key material bundled as .p12-archive via e-mail.
+   - and Domain.
 
 Afterwards, you will receive the certificate and its corresponding key material bundled as
 .p12-archive via e-mail.
 
-A mailing list dealing with DAPS certificates and questions regarding the key material (not the setup of connectors) is the same as for requesting certificates [daps-certificates@aisec.fraunhofer.de](mailto:daps-certificates@aisec.fraunhofer.de).
+In urgent cases, you can also directly contact us for a certificate request, but we highly encourage
+using the standard way. Our mailing list dealing with DAPS certificates and questions regarding the
+key material (not the setup of other connectors) is
+[daps-certificates@aisec.fraunhofer.de](mailto:daps-certificates@aisec.fraunhofer.de).
 
 ## Participant Information System (ParIS)
+
+The Participant Information System (ParIS) is available at [https://paris.ids.isst.fraunhofer.de](https://paris.ids.isst.fraunhofer.de).
+It expects IDS multipart messages at [https://paris.ids.isst.fraunhofer.de/infrastructure](https://paris.ids.isst.fraunhofer.de/infrastructure).
+The GUI can be accessed at [https://paris.ids.isst.fraunhofer.de/browse](https://paris.ids.isst.fraunhofer.de/browse).
+To get your IP address unblocked, please contact [us](mailto:info@dataspace-connector.de).
 
 The [repository](https://github.com/International-Data-Spaces-Association/ParIS-open-core) is open
 core and can be accessed at GitHub. Further documentation about the ParIS can be seen
