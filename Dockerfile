@@ -17,6 +17,7 @@
 # Build application
 FROM maven:3-eclipse-temurin-17 AS builder
 WORKDIR /app
+COPY ./settings.xml /usr/share/maven/conf/settings.xml
 COPY pom.xml .
 ## Dependencies
 RUN mvn -e -B dependency:resolve && \
